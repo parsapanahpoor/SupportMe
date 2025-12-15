@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Support My Open Source Project ❤️</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Add QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <!-- Add Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -18,6 +22,17 @@
             color: #fff;
             overflow-x: hidden;
             position: relative;
+        }
+
+        /* Particle Canvas */
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            pointer-events: none;
         }
 
         /* Animated Background */
@@ -90,6 +105,18 @@
             75% { transform: translate(20px, 30px) rotate(270deg); }
         }
 
+        /* Scroll Fade In Animation */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         /* Header */
         header {
             padding: 40px 20px;
@@ -100,6 +127,18 @@
             position: sticky;
             top: 0;
             z-index: 100;
+            animation: slideDown 0.6s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .header-content {
@@ -116,6 +155,12 @@
             background-clip: text;
             margin-bottom: 10px;
             display: inline-block;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
         .tagline {
@@ -146,6 +191,7 @@
         .nav-links a:hover {
             color: #00a651;
             background: rgba(0, 166, 81, 0.1);
+            transform: translateY(-2px);
         }
 
         /* Main Container */
@@ -170,6 +216,18 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .hero-subtitle {
@@ -179,6 +237,7 @@
             margin: 0 auto 40px;
             line-height: 1.8;
             font-weight: 300;
+            animation: fadeInUp 0.8s ease 0.2s backwards;
         }
 
         .stats-grid {
@@ -195,11 +254,13 @@
             border-radius: 15px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
+            animation: fadeInUp 0.8s ease 0.4s backwards;
         }
 
         .stat-card:hover {
             background: rgba(255, 255, 255, 0.08);
             transform: translateY(-5px);
+            border-color: #00a651;
         }
 
         .stat-number {
@@ -242,24 +303,27 @@
         .bank-card {
             width: 100%;
             max-width: 100%;
-            height: 250px;
+            height: 280px;
             position: relative;
             transform-style: preserve-3d;
-            transition: transform 0.6s;
+            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
             cursor: pointer;
         }
 
         .bank-card:hover {
-            transform: rotateY(5deg) rotateX(5deg) scale(1.02);
+            transform: rotateY(8deg) rotateX(5deg) scale(1.03);
         }
 
         .card-front {
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #00a651 0%, #008c45 50%, #006838 100%);
+            background: linear-gradient(135deg, #00a651 0%, #008c45 30%, #006838 70%, #004d2a 100%);
             border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 20px 60px rgba(0, 166, 81, 0.4);
+            padding: 28px;
+            box-shadow: 
+                0 25px 50px rgba(0, 166, 81, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+                0 2px 0 rgba(255, 255, 255, 0.1) inset;
             position: relative;
             overflow: hidden;
         }
@@ -267,124 +331,274 @@
         .card-front::before {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
+            top: 0;
+            left: -100%;
             width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
-            animation: shimmer 4s infinite;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            animation: cardShine 3s infinite;
         }
 
-        @keyframes shimmer {
-            0%, 100% { transform: translate(-50%, -50%); }
-            50% { transform: translate(0%, 0%); }
+        .card-front::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+            transform: translate(30%, -30%);
+        }
+
+        @keyframes cardShine {
+            0% { left: -100%; }
+            50%, 100% { left: 100%; }
+        }
+
+        /* Card Pattern Overlay */
+        .card-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 10px,
+                    rgba(255, 255, 255, 0.02) 10px,
+                    rgba(255, 255, 255, 0.02) 20px
+                );
+            pointer-events: none;
         }
 
         .card-chip {
-            width: 50px;
-            height: 40px;
-            background: linear-gradient(135deg, #f4d03f 0%, #f39c12 100%);
+            width: 55px;
+            height: 42px;
+            background: linear-gradient(135deg, #f4d03f 0%, #c9a227 50%, #f39c12 100%);
             border-radius: 8px;
-            margin-bottom: 20px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            box-shadow: 
+                0 4px 12px rgba(0, 0, 0, 0.3),
+                0 1px 0 rgba(255, 255, 255, 0.3) inset;
+            z-index: 2;
+        }
+
+        .card-chip::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 35px;
+            height: 28px;
+            background: linear-gradient(135deg, #d4af37 0%, #b8960c 100%);
+            border-radius: 4px;
         }
 
         .card-chip::after {
             content: '';
             position: absolute;
-            top: 6px;
-            left: 6px;
-            right: 6px;
-            bottom: 6px;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
             background: repeating-linear-gradient(
                 90deg,
-                rgba(0, 0, 0, 0.15) 0px,
-                rgba(0, 0, 0, 0.15) 2px,
+                rgba(0, 0, 0, 0.1) 0px,
+                rgba(0, 0, 0, 0.1) 2px,
                 transparent 2px,
-                transparent 4px
+                transparent 5px
             );
+        }
+
+        /* NFC Icon */
+        .card-nfc {
+            position: absolute;
+            top: 25px;
+            right: 80px;
+            width: 30px;
+            height: 30px;
+            opacity: 0.7;
+        }
+
+        .card-nfc::before,
+        .card-nfc::after {
+            content: '';
+            position: absolute;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+        }
+
+        .card-nfc::before {
+            width: 12px;
+            height: 12px;
+            top: 9px;
+            left: 0;
+            border-right: none;
+            border-top: none;
+            transform: rotate(45deg);
+        }
+
+        .card-nfc::after {
+            width: 20px;
+            height: 20px;
+            top: 5px;
+            left: 0;
+            border-right: none;
+            border-top: none;
+            transform: rotate(45deg);
         }
 
         .card-logo {
             position: absolute;
-            top: 25px;
+            top: 22px;
             left: 25px;
-            font-size: 1.3em;
+            font-size: 1.5em;
+            z-index: 2;
         }
 
         .bank-name-on-card {
             position: absolute;
-            top: 25px;
+            top: 22px;
             right: 25px;
             color: white;
             font-weight: 700;
-            font-size: 0.95em;
+            font-size: 0.9em;
             text-align: right;
-            line-height: 1.3;
+            line-height: 1.4;
             letter-spacing: 0.5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            z-index: 2;
         }
 
         .card-number {
             font-family: 'Courier New', monospace;
-            font-size: 1.4em;
+            font-size: 1.5em;
             color: white;
-            letter-spacing: 3px;
+            letter-spacing: 4px;
             margin-top: 75px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
             text-align: center;
             font-weight: 600;
+            position: relative;
+            z-index: 2;
+        }
+
+        .card-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 25px;
+            padding: 0 5px;
+            position: relative;
+            z-index: 2;
         }
 
         .card-holder {
-            position: absolute;
-            bottom: 25px;
-            right: 25px;
             color: rgba(255, 255, 255, 0.95);
         }
 
         .card-holder-label {
-            font-size: 0.6em;
-            margin-bottom: 4px;
-            opacity: 0.8;
-            letter-spacing: 1px;
+            font-size: 0.55em;
+            margin-bottom: 5px;
+            opacity: 0.7;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
         }
 
         .card-holder-name {
-            font-size: 0.95em;
+            font-size: 0.9em;
             font-weight: 600;
             letter-spacing: 1.5px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-copy-wrapper {
+            position: relative;
+            z-index: 2;
+        }
+
+        .card-copy-btn {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 10px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.8em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-copy-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-copy-btn:active {
+            transform: translateY(0);
         }
 
         /* WebMoney Card */
         .webmoney-card {
             width: 100%;
-            height: 250px;
-            background: linear-gradient(135deg, #1e5ba8 0%, #1a4d8f 50%, #164076 100%);
+            height: 280px;
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 30%, #1e3a8a 70%, #172554 100%);
             border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 20px 60px rgba(30, 91, 168, 0.4);
+            padding: 28px;
+            box-shadow: 
+                0 25px 50px rgba(37, 99, 235, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+                0 2px 0 rgba(255, 255, 255, 0.1) inset;
             position: relative;
             overflow: hidden;
-            transition: all 0.4s ease;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
             cursor: pointer;
         }
 
         .webmoney-card:hover {
             transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 30px 80px rgba(30, 91, 168, 0.5);
+            box-shadow: 0 35px 70px rgba(37, 99, 235, 0.5);
         }
 
         .webmoney-card::before {
             content: '';
             position: absolute;
-            top: -50%;
-            right: -50%;
+            top: 0;
+            left: -100%;
             width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-            animation: shimmer 5s infinite;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            animation: cardShine 4s infinite;
+        }
+
+        .webmoney-card::after {
+            content: '';
+            position: absolute;
+            bottom: -50%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 60%);
         }
 
         .webmoney-logo {
@@ -396,79 +610,120 @@
         }
 
         .payment-card-title {
-            font-size: 1.4em;
+            font-size: 1.5em;
             font-weight: 700;
             color: white;
-            margin-bottom: 25px;
             letter-spacing: 1px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .payment-card-subtitle {
+            font-size: 0.85em;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 8px;
+            letter-spacing: 0.5px;
         }
 
         .payment-card-id {
             font-family: 'Courier New', monospace;
-            font-size: 1.5em;
+            font-size: 1.6em;
             color: white;
-            letter-spacing: 2px;
-            margin-top: 30px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: 3px;
+            margin-top: 35px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
             text-align: center;
             font-weight: 600;
             word-break: break-all;
+            position: relative;
+            z-index: 2;
+        }
+
+        .webmoney-card .card-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 30px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .payment-type-badge {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 600;
+            letter-spacing: 1px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         /* Tether Card */
         .tether-card {
             width: 100%;
-            height: 250px;
-            background: linear-gradient(135deg, #26a17b 0%, #1e8763 50%, #176d4b 100%);
+            height: 280px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 30%, #047857 70%, #065f46 100%);
             border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 20px 60px rgba(38, 161, 123, 0.4);
+            padding: 28px;
+            box-shadow: 
+                0 25px 50px rgba(16, 185, 129, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+                0 2px 0 rgba(255, 255, 255, 0.1) inset;
             position: relative;
             overflow: hidden;
-            transition: all 0.4s ease;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
             cursor: pointer;
         }
 
         .tether-card:hover {
             transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 30px 80px rgba(38, 161, 123, 0.5);
+            box-shadow: 0 35px 70px rgba(16, 185, 129, 0.5);
         }
 
         .tether-card::before {
             content: '';
             position: absolute;
-            top: -50%;
-            right: -50%;
+            top: 0;
+            left: -100%;
             width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-            animation: shimmer 6s infinite;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            animation: cardShine 5s infinite;
         }
 
         .tether-logo {
             position: absolute;
-            top: 25px;
+            top: 20px;
             right: 25px;
-            font-size: 3em;
-            opacity: 0.2;
+            font-size: 3.5em;
+            opacity: 0.15;
+            font-weight: bold;
         }
 
         .wallet-address {
             font-family: 'Courier New', monospace;
-            font-size: 0.95em;
+            font-size: 0.85em;
             color: white;
-            letter-spacing: 1px;
-            margin-top: 30px;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.5px;
+            margin-top: 20px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
             word-break: break-all;
-            line-height: 1.6;
-            padding: 15px;
+            line-height: 1.5;
+            padding: 12px 15px;
             background: rgba(0, 0, 0, 0.2);
             border-radius: 10px;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 2;
         }
 
         .network-badge {
@@ -478,8 +733,77 @@
             border-radius: 20px;
             font-size: 0.75em;
             font-weight: 600;
-            margin-top: 15px;
+            margin-top: 12px;
             letter-spacing: 1px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .tether-card .card-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* QR Code Section */
+        .qr-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 50px 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 60px 0;
+            text-align: center;
+        }
+
+        .qr-title {
+            font-size: 2em;
+            color: #fff;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .qr-subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .qr-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .qr-box {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .qr-box:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-5px);
+            border-color: #00a651;
+        }
+
+        .qr-box h3 {
+            color: #00a651;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .qr-canvas {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            display: inline-block;
+            margin: 10px 0;
         }
 
         /* Info Section */
@@ -612,6 +936,13 @@
         .thank-you-box .icon {
             font-size: 3em;
             margin-bottom: 15px;
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            10%, 30% { transform: scale(1.1); }
+            20%, 40% { transform: scale(1); }
         }
 
         /* Footer */
@@ -680,7 +1011,7 @@
 
         .social-links a:hover {
             background: #00a651;
-            transform: translateY(-5px);
+            transform: translateY(-5px) rotate(360deg);
             border-color: #00a651;
         }
 
@@ -761,10 +1092,15 @@
             .payment-methods-title {
                 font-size: 2em;
             }
+
+            .qr-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
+    <canvas id="particles-canvas"></canvas>
     <div class="animated-bg"></div>
     <div class="floating-shapes">
         <div class="shape shape1"></div>
@@ -779,7 +1115,7 @@
             <nav class="nav-links">
                 <a href="#about">About</a>
                 <a href="#support">Support</a>
-                <a href="https://github.com/USERNAME/REPOSITORY" target="_blank">GitHub</a>
+                <a href="https://github.com/parsapanahpoor" target="_blank">GitHub</a>
                 <a href="#contact">Contact</a>
             </nav>
         </div>
@@ -795,41 +1131,47 @@
             </p>
 
             <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-number">10K+</div>
+                <div class="stat-card fade-in">
+                    <div class="stat-number" data-target="10000">0</div>
                     <div class="stat-label">Downloads</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number">500+</div>
+                <div class="stat-card fade-in">
+                    <div class="stat-number" data-target="500">0</div>
                     <div class="stat-label">GitHub Stars</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number">50+</div>
+                <div class="stat-card fade-in">
+                    <div class="stat-number" data-target="50">0</div>
                     <div class="stat-label">Contributors</div>
                 </div>
             </div>
         </section>
 
-        <h2 class="payment-methods-title">💳 Payment Methods</h2>
+        <h2 class="payment-methods-title fade-in">💳 Payment Methods</h2>
 
         <div class="payment-cards-grid">
             <!-- Bank Card -->
             <div class="card-container">
                 <div class="bank-card">
                     <div class="card-front">
+                        <div class="card-pattern"></div>
                         <div class="card-logo">🏛️</div>
+                        <div class="card-nfc"></div>
                         <div class="bank-name-on-card">
                             BANK MELLI<br>IRAN
                         </div>
                         <div class="card-chip"></div>
-                        <div class="card-number">6037 9971 **** ****</div>
-                        <div class="card-holder">
-                            <div class="card-holder-label">CARD HOLDER</div>
-                            <div class="card-holder-name">YOUR NAME</div>
+                        <div class="card-number">6037 9973 5700 8151</div>
+                        <div class="card-info-row">
+                            <div class="card-holder">
+                                <div class="card-holder-label">Card Holder</div>
+                                <div class="card-holder-name">ALI PANAHPOUR TEHRANI</div>
+                            </div>
+                            <div class="card-copy-wrapper">
+                                <button class="card-copy-btn" onclick="copyToClipboard('6037997357008151', this)">
+                                    <span>📋</span> Copy
+                                </button>
+                            </div>
                         </div>
-                        <button class="card-copy-btn" onclick="copyToClipboard('6037997112345678', this)">
-                            <span>📋</span> Copy Card Number
-                        </button>
                     </div>
                 </div>
             </div>
@@ -837,33 +1179,65 @@
             <!-- WebMoney Card -->
             <div class="card-container">
                 <div class="webmoney-card">
+                    <div class="card-pattern"></div>
                     <div class="payment-card-title">
                         <span>💼</span> WebMoney
                     </div>
+                    <p class="payment-card-subtitle">Digital Payment System</p>
                     <div class="payment-card-id">Z123456789012</div>
-                    <button class="card-copy-btn" onclick="copyToClipboard('Z123456789012', this)">
-                        <span>📋</span> Copy Wallet ID
-                    </button>
+                    <div class="card-info-row">
+                        <span class="payment-type-badge">Z-Wallet (USD)</span>
+                        <div class="card-copy-wrapper">
+                            <button class="card-copy-btn" onclick="copyToClipboard('Z123456789012', this)">
+                                <span>📋</span> Copy
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Tether Card -->
             <div class="card-container">
                 <div class="tether-card">
+                    <div class="card-pattern"></div>
                     <div class="tether-logo">₮</div>
                     <div class="payment-card-title">
                         <span>💰</span> Tether (USDT)
                     </div>
-                    <div class="network-badge">TRC20 Network</div>
+                    <span class="network-badge">TRC20 Network</span>
                     <div class="wallet-address">TYour1Tether2Wallet3Address4Here5Example6</div>
-                    <button class="card-copy-btn" onclick="copyToClipboard('TYour1Tether2Wallet3Address4Here5Example6', this)">
-                        <span>📋</span> Copy Wallet Address
-                    </button>
+                    <div class="card-info-row">
+                        <span class="payment-type-badge">Cryptocurrency</span>
+                        <div class="card-copy-wrapper">
+                            <button class="card-copy-btn" onclick="copyToClipboard('TYour1Tether2Wallet3Address4Here5Example6', this)">
+                                <span>📋</span> Copy
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <section class="info-section" id="support">
+        <!-- QR Code Section -->
+        <section class="qr-section fade-in" id="qr-codes">
+            <h2 class="qr-title">📱 Quick Scan</h2>
+            <p class="qr-subtitle">Scan these QR codes for faster payment</p>
+            
+            <div class="qr-grid">
+                <div class="qr-box">
+                    <h3>💳 Card Number</h3>
+                    <canvas id="qr-card" class="qr-canvas"></canvas>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 0.9em; margin-top: 10px;">6037-9973-5700-8151</p>
+                </div>
+                <div class="qr-box">
+                    <h3>🏦 Sheba (IBAN)</h3>
+                    <canvas id="qr-sheba" class="qr-canvas"></canvas>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 0.9em; margin-top: 10px;">IR270170000000355098722009</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="info-section fade-in" id="support">
             <h2 class="info-title">📋 Detailed Information</h2>
             
             <div class="info-row">
@@ -871,8 +1245,8 @@
                     <span>💳</span> Bank Card Number
                 </span>
                 <div class="info-value-container">
-                    <span class="info-value">6037-9971-1234-5678</span>
-                    <button class="copy-btn" onclick="copyToClipboard('6037997112345678', this)">
+                    <span class="info-value">6037-9973-5700-8151</span>
+                    <button class="copy-btn" onclick="copyToClipboard('6037997357008151', this)">
                         <span>📋</span> Copy
                     </button>
                 </div>
@@ -880,13 +1254,22 @@
 
             <div class="info-row">
                 <span class="info-label">
-                    <span>🏦</span> IBAN
+                    <span>🏦</span> IBAN (Sheba Number)
                 </span>
                 <div class="info-value-container">
-                    <span class="info-value">IR12 0170 0000 0012 3456 7890 01</span>
-                    <button class="copy-btn" onclick="copyToClipboard('IR120170000000123456789001', this)">
+                    <span class="info-value">IR27 0170 0000 0035 5098 7220 09</span>
+                    <button class="copy-btn" onclick="copyToClipboard('IR270170000000355098722009', this)">
                         <span>📋</span> Copy
                     </button>
+                </div>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    <span>🏛️</span> Bank Name
+                </span>
+                <div class="info-value-container">
+                    <span class="info-value">Bank Melli Iran (بانک ملی)</span>
                 </div>
             </div>
 
@@ -919,12 +1302,12 @@
                     <span>👤</span> Account Holder
                 </span>
                 <div class="info-value-container">
-                    <span class="info-value">Your Full Name</span>
+                    <span class="info-value">Ali Panahpour Tehrani (علی پناهپور تهرانی)</span>
                 </div>
             </div>
         </section>
 
-        <div class="thank-you-box">
+        <div class="thank-you-box fade-in">
             <div class="icon">❤️</div>
             <strong>Every contribution counts!</strong><br>
             Your support helps me continue developing free and open-source software.<br>
@@ -978,6 +1361,135 @@
     <div class="toast" id="toast">✅ Copied to clipboard!</div>
 
     <script>
+        // Particle System
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particles = [];
+        const particleCount = 80;
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 1;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
+                this.opacity = Math.random() * 0.5 + 0.2;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x > canvas.width) this.x = 0;
+                if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                if (this.y < 0) this.y = canvas.height;
+            }
+
+            draw() {
+                ctx.fillStyle = `rgba(0, 166, 81, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Counter Animation
+        function animateCounter(element) {
+            const target = parseInt(element.getAttribute('data-target'));
+            const duration = 2000;
+            const increment = target / (duration / 16);
+            let current = 0;
+
+            const updateCounter = () => {
+                current += increment;
+                if (current < target) {
+                    element.textContent = Math.floor(current).toLocaleString() + '+';
+                    requestAnimationFrame(updateCounter);
+                } else {
+                    element.textContent = target.toLocaleString() + '+';
+                }
+            };
+
+            updateCounter();
+        }
+
+        // Scroll Animation
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    
+                    // Animate counters when stats become visible
+                    if (entry.target.classList.contains('stat-card')) {
+                        const counter = entry.target.querySelector('.stat-number[data-target]');
+                        if (counter && !counter.classList.contains('animated')) {
+                            counter.classList.add('animated');
+                            animateCounter(counter);
+                        }
+                    }
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+        // Generate QR Codes
+        window.addEventListener('load', () => {
+            if (typeof QRCode !== 'undefined') {
+                QRCode.toCanvas(document.getElementById('qr-card'), '6037997357008151', {
+                    width: 180,
+                    margin: 2,
+                    color: {
+                        dark: '#00a651',
+                        light: '#ffffff'
+                    }
+                });
+
+                QRCode.toCanvas(document.getElementById('qr-sheba'), 'IR270170000000355098722009', {
+                    width: 180,
+                    margin: 2,
+                    color: {
+                        dark: '#00a651',
+                        light: '#ffffff'
+                    }
+                });
+            }
+        });
+
+        // Copy to Clipboard with Confetti
         function copyToClipboard(text, button) {
             navigator.clipboard.writeText(text).then(function() {
                 const originalHTML = button.innerHTML;
@@ -986,6 +1498,15 @@
                 
                 const toast = document.getElementById('toast');
                 toast.classList.add('show');
+
+                // Confetti effect
+                if (typeof confetti !== 'undefined') {
+                    confetti({
+                        particleCount: 100,
+                        spread: 70,
+                        origin: { y: 0.6 }
+                    });
+                }
                 
                 setTimeout(function() {
                     button.innerHTML = originalHTML;
